@@ -60,6 +60,7 @@ def visualAvgBothYear(df, dside):
     df2011 = df[df['yr'] == 0]
     df2012 = df[df['yr'] == 1]
     
+    # Data 2011
     df2011 = df2011.groupby('mnth').agg({
         'casual': ['std', 'mean', 'sum'],
         'registered': ['std', 'mean', 'sum']
@@ -73,6 +74,7 @@ def visualAvgBothYear(df, dside):
         'casual': 'Casual'
     }, inplace=True)
     
+    #Data 2012
     df2012 = df2012.groupby('mnth').agg({
         'casual': ['std', 'mean', 'sum'],
         'registered': ['std', 'mean', 'sum']
@@ -114,8 +116,16 @@ st.markdown("<h1 style='text-align: center;'>Dashboard Bicycle Rent</h1>", unsaf
 # Membuat 2 tab
 tab1, tab2 = st.tabs(['Averages', 'Another Factors'])
 
+css = '''
+<style>
+    .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+    font-size:1.5rem;
+    }
+</style>
+'''
+st.markdown(css, unsafe_allow_html=True)
 with tab1:
-    st.header('Averages Loaner by Year')
+    st.subheader('Averages Loaner by Year')
         
     me1, me2 = st.columns(2)
     
@@ -140,3 +150,80 @@ with tab1:
     #visualisasi data berdarkan tahun keseluruhan
     st.header('Averages Loaner by Both Year')
     visualAvgBothYear(daysDf, dataSide)
+
+with tab2:
+    # Faktor 1
+    st.subheader('Range Times Factor')
+    #Filtering berdasarkan Range Waktu
+    groupedByRangeTimes = hoursDf.groupby(by='range_times').range_times.count().sort_values(ascending=False)
+    
+    # Visualisasi Berdasarkan Range Waktu
+    fig, ax = plt.subplots(figsize=(10, 10))
+    plt.pie(
+        x=groupedByRangeTimes.values,
+        labels=groupedByRangeTimes.index,
+        autopct='%1.1f%%',
+        colors=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'],
+        textprops={'fontsize': 20} 
+    )
+    ax.set_title('Total Count By Range Times', fontsize=20)
+    st.pyplot(fig)
+    
+    # Faktor 2
+    st.subheader('Day Type Factor')
+    # Filtering berdasarkan tipe hari
+    groupedByDayType = hoursDf.groupby('day_type').cnt.sum().sort_values(ascending=False).round().astype(int)
+    # Membulatkan rata-rata mean dan mengubah tipe data menjadi integer
+    
+    fig, ax = plt.subplots(figsize=(10, 10))
+    plt.pie(
+        x=groupedByDayType.values,
+        labels=groupedByDayType.index,
+        autopct='%1.1f%%',
+        colors=['red', 'orange'],
+        explode=[0.1, 0],
+        textprops={'fontsize': 20} 
+    )
+    ax.set_title('Total Count By Day Type', fontsize=20)
+    st.pyplot(fig)
+    
+    # Faktor 3
+    st.subheader('Weather Situation Factor')
+    # Filtering berdasarkan cuaca
+    groupedByWeather = hoursDf.groupby('weather_situation').cnt.count().sort_values(ascending=False)
+    
+    fig, ax = plt.subplots(figsize=(18, 12))
+    plt.bar(x=groupedByWeather.index, height=groupedByWeather.values)
+    plt.title('Total Loaners By Weather Situation', fontsize=24)
+    ax.tick_params(axis='x', labelsize=24) 
+    ax.tick_params(axis='y', labelsize=24)
+    ax.set_xlabel('Weather', fontsize=24) 
+    ax.set_ylabel('Counts', fontsize=24) 
+    st.pyplot(fig)
+    
+    # Faktor 4
+    st.subheader('Season Type Factor')
+    # Filtering berdasarkan musim
+    groupedBySeason = hoursDf.groupby('season_type').cnt.mean().sort_values(ascending=False).round()
+    groupedBySeason.sort_values(ascending=False, inplace=True)
+    
+    fig, ax = plt.subplots(figsize=(18, 12))
+    plt.bar(x=groupedBySeason.index, height=groupedBySeason.values, color=['green', 'blue', 'blue', 'blue'], width=0.6)
+    plt.title('Total Loaners By Season Type', fontsize=24)
+    ax.tick_params(axis='x', labelsize=24) 
+    ax.tick_params(axis='y', labelsize=24)
+    ax.set_xlabel('Season Type', fontsize=24)
+    ax.set_ylabel('Counts', fontsize=24) 
+    st.pyplot(fig)
+    
+    # Faktor 5
+    st.subheader('Clustering By Range Time')
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    sns.scatterplot(data=hoursDf, x="cnt", y="range_times_encoded", hue="range_times_clustered", ax=ax)
+
+    ax.legend('Range Times Clustered', labels=['Dawn', 'Morning', 'Afternoon', 'Evening', 'Night'])
+    plt.title('Scatter Plot')
+    plt.xlabel('Range Times Encoded')
+    plt.ylabel('Count')
+    st.pyplot(fig)
