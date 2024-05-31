@@ -215,15 +215,3 @@ with tab2:
     ax.set_xlabel('Season Type', fontsize=24)
     ax.set_ylabel('Counts', fontsize=24) 
     st.pyplot(fig)
-    
-    # Faktor 5
-    st.subheader('Clustering By Range Time')
-    fig, ax = plt.subplots(figsize=(10, 6))
-
-    sns.scatterplot(data=hoursDf, x="cnt", y="range_times_encoded", hue="range_times_clustered", ax=ax)
-
-    ax.legend('Range Times Clustered', labels=['Dawn', 'Morning', 'Afternoon', 'Evening', 'Night'])
-    plt.title('Scatter Plot')
-    plt.xlabel('Range Times Encoded')
-    plt.ylabel('Count')
-    st.pyplot(fig)
